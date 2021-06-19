@@ -268,6 +268,10 @@ library(ggdark) # for dark minimal theme
 tuesdata <- tidytuesdayR::tt_load('2021-03-16')
 dat <- tuesdata$games
 
+# Check out the data
+View(dat)
+skimr::skim(dat)
+
 # TI start and end
 TIstart <- (7/30) + 7
 TIend <- (26/30) + 8
