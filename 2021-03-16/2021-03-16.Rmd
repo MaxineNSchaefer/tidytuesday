@@ -107,10 +107,10 @@ dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
 
 First plot the peak values per month for 2019. I chose 2019 since this was the last 'normal' year we had, and I rememebr my husband, Mark, playing Dota 2 that year.
 
-## Get base graph right
+## Save data in a new object to make graph generation faster Get reasonable base graph
 
 ```{r}
-dat %>% 
+dat_graph <-  dat %>% 
   filter(gamename == "Dota 2", # keep only Dota 2
          year == 2019) %>%     # keep only year 2019  
   mutate(peak_in_thousands = round((peak/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
@@ -127,8 +127,45 @@ dat %>%
     month == "October" ~ 10,
     month == "November" ~ 11,
     month == "December" ~ 12
-  )) %>% mutate(month = as.numeric(month)) %>%  # convert to numeric so that the months will be listed in order
-  ggplot(aes(x = month, y = peak_in_thousands)) + 
-  geom_point() + # add points
-  geom_line() # add lines to join points
+  )) %>% mutate(month = as.numeric(month))  # convert to numeric so that the months will be listed in order
+``` 
+
+## Make reasonable base graph
+
+```{r}
+p1 <- dat_graph %>% ggplot(aes(x = month, y = peak_in_thousands)) + 
+  geom_point(shape = 17) + # add points
+  geom_line(linetype = 5) + # add lines to join points
+  theme_minimal() +  # add a minimal theme
+  labs(x = "Month in 2019",  # add labels
+       y = "Peak number of players",
+       title = "Peak Number of Dota 2 Players",
+       subtitle = "per month in 2019", 
+       caption = "Data source: TidyTuesday 2021-03-16
+       @MaxineNSchaefer") +
+  scale_x_continuous(n.breaks = 12)  # have a break for each month
+
+p1  
+```
+
+## Add data for International 2019
+
+The International in 2019 began on 7 July and the final was on 26 August. Add these dates using `vline()`.
+
+First create a dataframe with the TI data.
+
+```{r}
+TIstart <- (7/30) + 7
+TIend <- (26/30) + 8
+```
+
+Add TI start and end to graph.
+
+```{r}
+p1 +
+  geom_vline(xintercept = TIstart, color = "#982f1f") + # add start date and color using Dota 2 colour
+  geom_vline(xintercept = TIend, color = "#982f1f") + # add end date and color using Dota 2 colour
+  annotate(geom="text", x=8, y=900, label="TI 9",
+              color="#982f1f")
+  
 ```
