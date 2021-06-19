@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r message = FALSE}
 library(tidytuesdayR)
 library(tidyverse)
+library(ggdark) # for dark minimal theme
 ```
 
 
@@ -169,3 +170,36 @@ p1 +
               color="#982f1f")
   
 ```
+
+# Make a prettier vis
+
+Dota 2 as a game is quite dark. Redo the graph with a dark background and light elements. 
+
+## New base graph
+
+```{r}
+p2 <- dat_graph %>% ggplot(aes(x = month, y = peak_in_thousands)) + 
+  geom_point(shape = 17) + # add points
+  geom_line(linetype = 5) + # add lines to join points
+  labs(x = "Month in 2019",  # add labels
+       y = "Peak number of players",
+       title = "Peak Number of Dota 2 Players",
+       subtitle = "per month in 2019", 
+       caption = "Data source: TidyTuesday 2021-03-16
+       @MaxineNSchaefer") +
+  scale_x_continuous(n.breaks = 12) + # have a break for each month
+  geom_vline(xintercept = TIstart, color = "#982f1f") + # add start date and color using Dota 2 colour
+  geom_vline(xintercept = TIend, color = "#982f1f") + # add end date and color using Dota 2 colour
+  annotate(geom="text", x=8, y=900, label="TI 9", color="#982f1f") # add text to graph
+  
+
+p2  
+```
+
+## Make graph darker
+
+```{r}
+p2 + theme(title(element_text(colour = "#982f1f")))
+  
+```
+
