@@ -16,10 +16,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # Load libraries
 
 ```{r message = FALSE}
-library(tidytuesdayR)
+# library(tidytuesdayR) # only to initially download data
 library(tidyverse)
 library(ggdark) # for dark minimal theme
-library(extrafont)
 ```
 
 
@@ -78,6 +77,8 @@ dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
   )) %>% mutate(month = as.numeric(month)) %>% 
   ggplot(aes(x = month, y = avg_in_thousands)) + 
   geom_point() + facet_wrap(~year)
+
+ggsave("avg-change-over-time.png")
 ```
 
 This graphs shows that Dota 2 started off with fewer players in 2012, which increased to a peak in 2016 and has dropped slightly until 2021. 
@@ -103,6 +104,8 @@ dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
   )) %>% mutate(month = as.numeric(month)) %>% 
   ggplot(aes(x = month, y = peak_in_thousands)) + 
   geom_point() + facet_wrap(~year)
+
+ggsave("peak-change-over-time.png")
 ```
 
 # In a given year, are the peaks affected by Dota 2 related events such as The International?
@@ -148,6 +151,7 @@ p1 <- dat_graph %>% ggplot(aes(x = month, y = peak_in_thousands)) +
   scale_x_continuous(n.breaks = 12)  # have a break for each month
 
 p1  
+ggsave("p1.png")
 ```
 
 ## Add data for International 2019
@@ -219,7 +223,8 @@ p2 <- dat_graph %>% ggplot(aes(x = month, y = peak_in_thousands)) +
   geom_vline(xintercept = TIend, color = "#cc0000") + # add end date and color using Dota 2 colour
   annotate(geom="text", x=8, y=450, label="TI 9", color="#cc0000", size = 6) # add text to graph
   
-p2  
+p2 
+ggsave("p2.png")
 ```
 
 ## Make graph darker
@@ -246,6 +251,6 @@ p3
 # Save the output
 
 ```{r}
- # ggsave("dotaplot.png")
+ggsave("dotaplot.png")
 ```
 
