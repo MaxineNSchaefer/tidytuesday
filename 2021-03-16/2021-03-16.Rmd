@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidytuesdayR)
 library(tidyverse)
 library(ggdark) # for dark minimal theme
+library(extrafont)
 ```
 
 
@@ -104,11 +105,11 @@ dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
   geom_point() + facet_wrap(~year)
 ```
 
-# In a given year, are the peaks affected by Dota 2 related events such as the international?
+# In a given year, are the peaks affected by Dota 2 related events such as The International?
 
 First plot the peak values per month for 2019. I chose 2019 since this was the last 'normal' year we had, and I rememebr my husband, Mark, playing Dota 2 that year.
 
-## Save data in a new object to make graph generation faster Get reasonable base graph
+## Save data in a new object to make graph generation faster
 
 ```{r}
 dat_graph <-  dat %>% 
@@ -178,28 +179,73 @@ Dota 2 as a game is quite dark. Redo the graph with a dark background and light 
 ## New base graph
 
 ```{r}
+# data to work with
+dat_graph <-  dat %>% 
+  filter(gamename == "Dota 2", # keep only Dota 2
+         year == 2019) %>%     # keep only year 2019  
+  mutate(peak_in_thousands = round((peak/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
+  mutate(month = case_when(   # convert months to numbers so that the months are listed in order in the graph
+    month == "January" ~ 1,
+    month == "February" ~ 2,
+    month == "March" ~ 3,
+    month == "April" ~ 4,
+    month == "May" ~ 5,
+    month == "June" ~ 6,
+    month == "July" ~ 7,
+    month == "August" ~ 8,
+    month == "September" ~ 9,
+    month == "October" ~ 10,
+    month == "November" ~ 11,
+    month == "December" ~ 12
+  )) %>% mutate(month = as.numeric(month))  # convert to numeric so that the months will be listed in order
+
+# TI start and end
+TIstart <- (7/30) + 7
+TIend <- (26/30) + 8
+
+# base graph
 p2 <- dat_graph %>% ggplot(aes(x = month, y = peak_in_thousands)) + 
-  geom_point(shape = 17) + # add points
+  geom_point(shape = 17, size = 3) + # add points
   geom_line(linetype = 5) + # add lines to join points
   labs(x = "Month in 2019",  # add labels
-       y = "Peak number of players",
-       title = "Peak Number of Dota 2 Players",
+       y = "Peak number of players in thousands",
+       title = "PEAK NUMBER OF DOTA 2 PLAYERS",
        subtitle = "per month in 2019", 
        caption = "Data source: TidyTuesday 2021-03-16
        @MaxineNSchaefer") +
   scale_x_continuous(n.breaks = 12) + # have a break for each month
-  geom_vline(xintercept = TIstart, color = "#982f1f") + # add start date and color using Dota 2 colour
-  geom_vline(xintercept = TIend, color = "#982f1f") + # add end date and color using Dota 2 colour
-  annotate(geom="text", x=8, y=900, label="TI 9", color="#982f1f") # add text to graph
+  scale_y_continuous(limits = c(0, 1100), breaks = c(0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100)) +
+  geom_vline(xintercept = TIstart, color = "#cc0000") + # add start date and color using Dota 2 colour
+  geom_vline(xintercept = TIend, color = "#cc0000") + # add end date and color using Dota 2 colour
+  annotate(geom="text", x=8, y=450, label="TI 9", color="#cc0000", size = 6) # add text to graph
   
-
 p2  
 ```
 
 ## Make graph darker
 
 ```{r}
-p2 + theme(title(element_text(colour = "#982f1f")))
+p3 <- p2 + dark_theme_minimal() + # add basic dark theme
   
+  # edit theme to match Dota 2 colours more or less
+  theme(axis.title = element_text(colour = "#b22222", face = "bold"),
+        plot.title = element_text(size = 20, colour = "#cc0000", face = "bold", family = "serif"),
+        plot.subtitle = element_text(colour = "#cc0000"),
+        plot.caption = element_text(colour = "#b22222"),
+        axis.text = element_text(colour = "#b22222"),
+        panel.grid.major = element_blank(), # remove grid lines
+        panel.grid.minor = element_blank()) +  # remove grid lines
+  
+  annotate(geom="text", x=10, y=450, label= # add text to indicate prize pool value
+  "Prize pool
+  34.33 mil USD", color="#cc0000", size = 4)
+  
+p3
+```
+
+# Save the output
+
+```{r}
+ # ggsave("dotaplot.png")
 ```
 
