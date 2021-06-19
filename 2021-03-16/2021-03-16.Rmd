@@ -1,0 +1,134 @@
+---
+title: '2021-03-16'
+author: "M Schaefer"
+date: "19/06/2021"
+output: 
+  html_document: 
+    highlight: textmate
+    theme: readable
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries
+
+```{r message = FALSE}
+library(tidytuesdayR)
+library(tidyverse)
+```
+
+
+# Download and save data
+
+```{r results = 'hide', message=FALSE}
+# tuesdata <- tidytuesdayR::tt_load('2021-03-16')
+# 
+# dat <- tuesdata$games
+# 
+# write_csv(dat, "data.csv")
+
+dat <- read_csv("data.csv")
+```
+
+# Check out the data
+
+```{r}
+View(dat)
+skimr::skim(dat)
+```
+
+What I notice:
+ 
+ * 1258 unique games `gamename`; need to convert to a factor
+ * years range from 2012 - 2021 `year`; need to convert to a factor
+ * `month` needs to be converted to a factor
+ * from data dictionary
+    + `avg` = average number of players at the same time
+    + `peak` = most players at same time
+
+# Convert some variables to factors
+
+```{r}
+dat <- dat %>% mutate(across(c(gamename, year), as_factor))
+```
+
+# Compare average number of players per month and year over time for Dota 2
+
+```{r}
+dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
+  mutate(avg_in_thousands = round((avg/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
+  mutate(month = case_when(   # covert months to numbers so that the months are lsited correctly in the graph
+    month == "January" ~ 1,
+    month == "February" ~ 2,
+    month == "March" ~ 3,
+    month == "April" ~ 4,
+    month == "May" ~ 5,
+    month == "June" ~ 6,
+    month == "July" ~ 7,
+    month == "August" ~ 8,
+    month == "September" ~ 9,
+    month == "October" ~ 10,
+    month == "November" ~ 11,
+    month == "December" ~ 12
+  )) %>% mutate(month = as.numeric(month)) %>% 
+  ggplot(aes(x = month, y = avg_in_thousands)) + 
+  geom_point() + facet_wrap(~year)
+```
+
+This graphs shows that Dota 2 started off with fewer players in 2012, which increased to a peak in 2016 and has dropped slightly until 2021. 
+
+# Compare peak number of players per month and year over time for Dota 2
+
+```{r}
+dat %>% filter(gamename == "Dota 2") %>%      # keep only Dota 2
+  mutate(peak_in_thousands = round((peak/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
+  mutate(month = case_when(   # covert months to numbers so that the months are lsited correctly in the graph
+    month == "January" ~ 1,
+    month == "February" ~ 2,
+    month == "March" ~ 3,
+    month == "April" ~ 4,
+    month == "May" ~ 5,
+    month == "June" ~ 6,
+    month == "July" ~ 7,
+    month == "August" ~ 8,
+    month == "September" ~ 9,
+    month == "October" ~ 10,
+    month == "November" ~ 11,
+    month == "December" ~ 12
+  )) %>% mutate(month = as.numeric(month)) %>% 
+  ggplot(aes(x = month, y = peak_in_thousands)) + 
+  geom_point() + facet_wrap(~year)
+```
+
+# In a given year, are the peaks affected by Dota 2 related events such as the international?
+
+First plot the peak values per month for 2019. I chose 2019 since this was the last 'normal' year we had, and I rememebr my husband, Mark, playing Dota 2 that year.
+
+## Get base graph right
+
+```{r}
+dat %>% 
+  filter(gamename == "Dota 2", # keep only Dota 2
+         year == 2019) %>%     # keep only year 2019  
+  mutate(peak_in_thousands = round((peak/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
+  mutate(month = case_when(   # convert months to numbers so that the months are listed in order in the graph
+    month == "January" ~ 1,
+    month == "February" ~ 2,
+    month == "March" ~ 3,
+    month == "April" ~ 4,
+    month == "May" ~ 5,
+    month == "June" ~ 6,
+    month == "July" ~ 7,
+    month == "August" ~ 8,
+    month == "September" ~ 9,
+    month == "October" ~ 10,
+    month == "November" ~ 11,
+    month == "December" ~ 12
+  )) %>% mutate(month = as.numeric(month)) %>%  # convert to numeric so that the months will be listed in order
+  ggplot(aes(x = month, y = peak_in_thousands)) + 
+  geom_point() + # add points
+  geom_line() # add lines to join points
+```
