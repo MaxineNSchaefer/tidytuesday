@@ -4,9 +4,11 @@ author: "M Schaefer"
 date: "19/06/2021"
 output: 
   html_document: 
-    highlight: textmate
+    highlight: tango
     theme: readable
     df_print: kable
+    toc: yes
+    number_sections: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -254,3 +256,94 @@ p3
 ggsave("dotaplot.png")
 ```
 
+# All the code in one place
+
+```{r message = FALSE, eval = FALSE}
+# libraries
+library(tidytuesdayR) # only to initially download data
+library(tidyverse)
+library(ggdark) # for dark minimal theme
+
+# Download and save data
+tuesdata <- tidytuesdayR::tt_load('2021-03-16')
+dat <- tuesdata$games
+
+# TI start and end
+TIstart <- (7/30) + 7
+TIend <- (26/30) + 8
+
+# Generate graph
+
+p_final <- 
+  
+  # get data ready
+ dat %>% 
+  
+  # filter data to include only Dota 2 for 2019
+  filter(gamename == "Dota 2", # keep only Dota 2
+         year == 2019) %>%     # keep only year 2019
+  
+  # make axis more readable
+  mutate(peak_in_thousands = round((peak/1000), 0 )) %>% # reduce numbers on the graph by dividing by 1000
+  
+  # convert months to numbers so that the months are listed in order in the graph
+  mutate(month = case_when(   
+    month == "January" ~ 1,
+    month == "February" ~ 2,
+    month == "March" ~ 3,
+    month == "April" ~ 4,
+    month == "May" ~ 5,
+    month == "June" ~ 6,
+    month == "July" ~ 7,
+    month == "August" ~ 8,
+    month == "September" ~ 9,
+    month == "October" ~ 10,
+    month == "November" ~ 11,
+    month == "December" ~ 12
+  )) %>% mutate(month = as.numeric(month)) %>%  # convert to numeric so that the months will be listed in order
+
+
+# base graph
+ ggplot(aes(x = month, y = peak_in_thousands)) + 
+  geom_point(shape = 17, size = 3) + # add points
+  geom_line(linetype = 5) + # add lines to join points
+  
+  # add labels
+  labs(x = "Month in 2019",  
+       y = "Peak number of players in thousands",
+       title = "PEAK NUMBER OF DOTA 2 PLAYERS",
+       subtitle = "per month in 2019", 
+       caption = "Data source: TidyTuesday 2021-03-16
+       @MaxineNSchaefer") +
+  
+  # fix axis breaks and limits
+  scale_x_continuous(n.breaks = 12) + # have a break for each month
+  scale_y_continuous(limits = c(0, 1100), breaks = c(0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100)) + # start at 0
+  
+  # add start and end dates of The International which I got from https://liquipedia.net/dota2/The_International/2019#Viewership_Stats
+  geom_vline(xintercept = TIstart, color = "#cc0000") + # add start date and color using Dota 2 colour
+  geom_vline(xintercept = TIend, color = "#cc0000") + # add end date and color using Dota 2 colour
+  
+    # add label for TI, and prize pool
+  annotate(geom="text", x=8, y=450, label="TI 9", color="#cc0000", size = 6) + # add text to graph 
+  annotate(geom="text", x=10, y=450, label= # add text to indicate prize pool value
+  "Prize pool
+  34.33 mil USD", color="#cc0000", size = 4) +
+  
+  # edit theme
+dark_theme_minimal() + # add basic dark theme from {ggdark}
+  
+  # edit theme to match Dota 2 colours more or less
+  theme(axis.title = element_text(colour = "#b22222", face = "bold"),
+        plot.title = element_text(size = 20, colour = "#cc0000", face = "bold", family = "serif"), #change the font for the title
+        plot.subtitle = element_text(colour = "#cc0000"),
+        plot.caption = element_text(colour = "#b22222"),
+        axis.text = element_text(colour = "#b22222"),
+        panel.grid.major = element_blank(), # remove grid lines
+        panel.grid.minor = element_blank())  # remove grid lines
+
+p_final
+# ggsave("final_plot.png")
+```
+
+![Peak number of players (in thousands) of Dota 2 in 2019](final_plot.png)
